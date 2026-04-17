@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 export default function Home() {
-  const [tickets, setTickets] = useState([]);
+  const [tickets, setTickets] = useState<any[]>([]);
   const [search, setSearch] = useState('');
 
   useEffect(() => {
