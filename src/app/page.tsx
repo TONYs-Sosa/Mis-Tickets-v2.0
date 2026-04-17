@@ -1,63 +1,74 @@
-import Image from "next/image";
+'use client';
+import { useState, useEffect } from 'react';
+import { db } from '@/lib/firebase';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { Search, Plus, Terminal, Hash, Cpu } from 'lucide-react';
+import { motion } from 'framer-motion';
+import Link from 'next/link';
 
 export default function Home() {
+  const [tickets, setTickets] = useState([]);
+  const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    const q = query(collection(db, "solutions"), orderBy("fecha", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setTickets(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    return () => unsubscribe();
+  }, []);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-[#020617] text-slate-300 font-sans">
+      <nav className="fixed top-0 w-full z-50 bg-[#020617]/90 backdrop-blur-md border-b border-white/5 p-4">
+        <div className="max-w-6xl mx-auto flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <Terminal className="text-emerald-500" size={20} />
+            <h1 className="font-mono font-bold text-white tracking-tighter text-sm uppercase">Dev_Log_v2</h1>
+          </div>
+          <Link href="/nuevo" className="bg-white text-black px-4 py-2 rounded-lg text-xs font-black hover:bg-emerald-400 transition-colors">
+            + AGREGAR ENTRADA
+          </Link>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </nav>
+
+      <main className="max-w-6xl mx-auto pt-24 p-6">
+        <div className="relative mb-10">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={18} />
+          <input 
+            type="text" 
+            placeholder="Filtrar por error o plataforma..." 
+            className="w-full bg-slate-900/50 border border-white/5 p-4 pl-12 rounded-xl outline-none focus:border-emerald-500/50 transition-all text-sm"
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {tickets
+            .filter(t => t.titulo.toLowerCase().includes(search.toLowerCase()) || t.app.toLowerCase().includes(search.toLowerCase()))
+            .map((ticket, index) => (
+              <motion.div 
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                key={ticket.id}
+                className="bg-slate-900/40 border border-white/5 p-6 rounded-2xl hover:bg-slate-900/80 transition-all"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <span className="text-[10px] font-mono text-emerald-500 border border-emerald-500/20 px-2 py-0.5 rounded">
+                    {ticket.app}
+                  </span>
+                  <span className="text-[10px] text-slate-600 font-mono italic">
+                    {ticket.fecha?.toDate().toLocaleDateString()}
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold text-white mb-3 tracking-tight">{ticket.titulo}</h3>
+                <div className="bg-[#05070a] p-4 rounded-lg border border-white/5">
+                  <p className="text-slate-400 text-xs font-mono leading-relaxed whitespace-pre-wrap">
+                    <span className="text-emerald-900 mr-2 font-bold">{">"}</span>
+                    {ticket.solucion}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
         </div>
       </main>
     </div>
