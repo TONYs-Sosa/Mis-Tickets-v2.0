@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, doc, deleteDoc, updateDoc } from "firebase/firestore"; // <-- Agregamos esto
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
@@ -11,9 +11,9 @@ const firebaseConfig = {
   appId: "1:962394076222:web:f9a3415d1dd191fe3d4d6f"
 };
 
-// Evita inicializar doble en Next.js
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+
 export const db = getFirestore(app);
 export const storage = getStorage(app);
-
-
+// Exportamos estas funciones para usarlas en el componente
+export { doc, deleteDoc, updateDoc };
