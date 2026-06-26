@@ -37,7 +37,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#0a0c14] text-slate-300 font-sans selection:bg-emerald-500/30">
-      {/* Navbar con efecto glass */}
+      {/* Navbar */}
       <nav className="sticky top-0 w-full z-50 bg-[#0a0c14]/80 backdrop-blur-xl border-b border-white/5 p-6">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
@@ -53,7 +53,6 @@ export default function Home() {
       </nav>
 
       <main className="max-w-7xl mx-auto p-6 mt-6">
-        {/* Barra de búsqueda mejorada */}
         <div className="relative mb-12">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
           <input 
@@ -64,7 +63,6 @@ export default function Home() {
           />
         </div>
 
-        {/* Grid de Tarjetas Estilo "Card Glow" */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {tickets.filter(t => t.titulo.toLowerCase().includes(search.toLowerCase()) || t.app.toLowerCase().includes(search.toLowerCase())).map((ticket) => (
             <motion.div key={ticket.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="group relative bg-[#11131d] border border-white/5 p-6 rounded-3xl hover:border-emerald-500/30 transition-all hover:shadow-[0_0_30px_-10px_rgba(16,185,129,0.15)]">
@@ -84,7 +82,7 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Modal Moderno */}
+      {/* Modal con IA */}
       <AnimatePresence>
         {editingTicket && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
@@ -92,11 +90,34 @@ export default function Home() {
             <motion.form initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} onSubmit={handleUpdate} className="relative bg-[#11131d] border border-white/10 p-8 rounded-3xl w-full max-w-lg shadow-2xl">
               <div className="flex justify-between mb-6">
                 <h2 className="text-xl font-bold text-white">Editar entrada</h2>
-                <button onClick={() => setEditingTicket(null)} className="text-slate-500 hover:text-white"><X size={20} /></button>
+                <button type="button" onClick={() => setEditingTicket(null)} className="text-slate-500 hover:text-white"><X size={20} /></button>
               </div>
               <input className="w-full bg-[#0a0c14] border border-white/5 p-4 rounded-xl mb-3 outline-none focus:border-emerald-500" value={editingTicket.titulo} onChange={(e) => setEditingTicket({...editingTicket, titulo: e.target.value})} />
               <input className="w-full bg-[#0a0c14] border border-white/5 p-4 rounded-xl mb-3 outline-none focus:border-emerald-500" value={editingTicket.app} onChange={(e) => setEditingTicket({...editingTicket, app: e.target.value})} />
-              <textarea className="w-full bg-[#0a0c14] border border-white/5 p-4 rounded-xl h-32 outline-none focus:border-emerald-500" value={editingTicket.solucion} onChange={(e) => setEditingTicket({...editingTicket, solucion: e.target.value})} />
+              
+              <div className="relative">
+                <textarea 
+                  className="w-full bg-[#0a0c14] border border-white/5 p-4 rounded-xl h-32 outline-none focus:border-emerald-500" 
+                  value={editingTicket.solucion} 
+                  onChange={(e) => setEditingTicket({...editingTicket, solucion: e.target.value})} 
+                />
+                <button 
+                  type="button" 
+                  onClick={async () => {
+                    const res = await fetch('/api/chat', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ prompt: editingTicket.solucion }),
+                    });
+                    const data = await res.json();
+                    setEditingTicket({...editingTicket, solucion: data.response});
+                  }}
+                  className="w-full mt-2 text-[10px] bg-emerald-500/10 text-emerald-400 p-2 rounded-lg hover:bg-emerald-500 hover:text-black transition-all flex items-center justify-center gap-2 font-bold uppercase tracking-widest"
+                >
+                  <Sparkles size={12} /> OPTIMIZAR SOLUCIÓN CON IA
+                </button>
+              </div>
+
               <button type="submit" className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold py-3 rounded-xl mt-6 transition-colors">Guardar Cambios</button>
             </motion.form>
           </div>
