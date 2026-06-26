@@ -2,12 +2,11 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const prompt = body.prompt;
+    const { prompt } = await req.json();
     const API_KEY = process.env.GEMINI_API_KEY;
 
     if (!API_KEY) {
-      return NextResponse.json({ error: "API Key no configurada" }, { status: 500 });
+      return NextResponse.json({ error: "No se detectó la variable GEMINI_API_KEY en Vercel" }, { status: 500 });
     }
 
     const response = await fetch(
@@ -22,14 +21,14 @@ export async function POST(req: Request) {
     );
 
     const data = await response.json();
-    
-    // Verificamos si la respuesta de Google trae el texto
-    if (data.candidates && data.candidates[0].content.parts[0].text) {
-      return NextResponse.json({ response: data.candidates[0].content.parts[0].text });
-    } else {
-      return NextResponse.json({ error: "Error en la respuesta de Google", details: data }, { status: 500 });
+
+    // Si la API de Google devuelve un error, lo pasamos al frontend
+    if (!response.ok) {
+      return NextResponse.json({ error: "Google API rechazó la petición", details: data }, { status: 500 });
     }
-  } catch (error) {
-    return NextResponse.json({ error: "Error en el servidor", details: error }, { status: 500 });
+
+    return NextResponse.json({ response: data.candidates[0].content.parts[0].text });
+  } catch (error: any) {
+    return NextResponse.json({ error: "Error en el servidor", details: error.message }, { status: 500 });
   }
 }
