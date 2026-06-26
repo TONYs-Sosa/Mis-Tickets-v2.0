@@ -5,17 +5,18 @@ export async function POST(req: Request) {
     const { prompt } = await req.json();
     const API_KEY = process.env.GEMINI_API_KEY;
 
+    // Cambiamos el modelo a gemini-1.5-flash (sin versión extraña) 
+    // y usamos el endpoint correcto de Google
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: "Mejora esta nota técnica de HubSpot y Laravel: " + prompt }] }]
+        contents: [{ parts: [{ text: "Eres experto en HubSpot y Laravel. Mejora esta nota técnica: " + prompt }] }]
       }),
     });
 
     const data = await res.json();
 
-    // AQUÍ ESTÁ EL CAMBIO: Si algo falla, devolvemos el objeto 'data' completo
     if (!res.ok) {
       return NextResponse.json({ error: "Error de Google", details: data }, { status: 500 });
     }
