@@ -10,7 +10,7 @@ export async function POST(req: Request) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: "Eres experto en HubSpot y pandadoc. Mejora esta nota técnica: " + prompt }] }]
+        contents: [{ parts: [{ text: "Actua como experto en HubSpot. Mejora la redaccion de estos pasos tecnicos: " + prompt }] }]
       }),
     });
 
