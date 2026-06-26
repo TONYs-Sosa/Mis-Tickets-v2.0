@@ -5,8 +5,8 @@ export async function POST(req: Request) {
     const { prompt } = await req.json();
     const API_KEY = process.env.GEMINI_API_KEY;
 
-    // Usamos el modelo que te sugirió Google en el mensaje de error
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${API_KEY}`, {
+    // Usando el modelo que te sugirió el error: gemini-3.1-flash-lite
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${API_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -17,6 +17,7 @@ export async function POST(req: Request) {
     const data = await res.json();
 
     if (!res.ok) {
+      // Si sigue fallando, la respuesta nos dirá qué modelos SÍ están disponibles
       return NextResponse.json({ error: "Error de Google", details: data }, { status: 500 });
     }
 
